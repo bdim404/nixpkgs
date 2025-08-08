@@ -1,30 +1,46 @@
-{
+{ 
   lib,
+  stdenvNoCC,
   buildNpmPackage,
   fetchFromGitHub,
   fetchNpmDeps,
-  gitUpdater,
+  gitUpdater
 }:
+
+let
+  upstreamSrc = fetchFromGitHub {
+    owner = "google-gemini";
+    repo = "gemini-cli";
+    tag = "v0.1.17";
+    hash = "sha256-4PnyJKAiRksiGac6/ibZ/DhFhCFsFn+hjEPqml2XVfk=";
+  };
+
+  patchedSrc = stdenvNoCC.mkDerivation {
+    name = "gemini-cli-src-patched";
+    src = upstreamSrc;
+    phases = [ "unpackPhase" "installPhase" ];
+    installPhase = ''
+      mkdir -p $out
+      cp -r . $out/
+      cp ${./package-lock.json} $out/package-lock.json
+    '';
+  };
+in
 
 buildNpmPackage (finalAttrs: {
   pname = "gemini-cli";
-  version = "0.1.14";
+  version = "0.1.17";
 
-  src = fetchFromGitHub {
-    owner = "google-gemini";
-    repo = "gemini-cli";
-    tag = "v${finalAttrs.version}";
-    hash = "sha256-u73aqh7WnfetHj/64/HyzSR6aJXRKt0OXg3bddhhQq8=";
-  };
+  src = patchedSrc;
 
   npmDeps = fetchNpmDeps {
-    inherit (finalAttrs) src;
-    hash = "sha256-9T31QlffPP6+ryRVN/7t0iMo+2AgwPb6l6CkYh6839U=";
+    src = patchedSrc;
+    hash = "sha256-I7PiEiH8YPSydcltke38XC7vDP2M5SrG9ubBVsw3v3c=";
   };
 
   preConfigure = ''
     mkdir -p packages/generated
-    echo "export const GIT_COMMIT_INFO = { commitHash: '${finalAttrs.src.rev}' };" > packages/generated/git-commit.ts
+    echo "export const GIT_COMMIT_INFO = { commitHash: '${upstreamSrc.rev}' };" > packages/generated/git-commit.ts
   '';
 
   installPhase = ''
@@ -58,3 +74,4 @@ buildNpmPackage (finalAttrs: {
     mainProgram = "gemini";
   };
 })
+
