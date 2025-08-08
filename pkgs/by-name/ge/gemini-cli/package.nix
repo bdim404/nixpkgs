@@ -1,10 +1,10 @@
-{ 
+{
   lib,
   stdenvNoCC,
   buildNpmPackage,
   fetchFromGitHub,
   fetchNpmDeps,
-  gitUpdater
+  gitUpdater,
 }:
 
 let
