@@ -15,7 +15,7 @@ buildPythonPackage rec {
   src = fetchFromGitHub {
     owner = "beardypig";
     repo = "pymp4";
-    rev = "v${version}";
+    tag = "v${version}";
     hash = "sha256-gX9ovkA5+siYXmZ+StyQHRKrqS0NkKw0c/0SeUFcOqU=";
   };
 
